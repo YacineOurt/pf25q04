@@ -24,6 +24,7 @@ public class TTTConsoleNonOO {
    public static final int DRAW       = 1;
    public static final int CROSS_WON  = 2;
    public static final int NOUGHT_WON = 3;
+   public static boolean REPLIED = false;
    // The current state of the game
    public static int currentState;
 
@@ -33,6 +34,7 @@ public class TTTConsoleNonOO {
    public static void main(String[] args) {
       // Initialize the board, currentState and currentPlayer
       initGame();
+   
 
       // Play the game once
       do {
@@ -52,10 +54,27 @@ public class TTTConsoleNonOO {
          // Switch currentPlayer
          currentPlayer = (currentPlayer == CROSS) ? NOUGHT : CROSS;
       } while (currentState == PLAYING); // repeat if not game over
+      
+
+      do {
+         System.out.print("Play again (y/n)? ");
+         char ans = in.next().charAt(0);
+         if (ans == 'n' || ans == 'N') {
+            System.out.println("Bye!");
+            System.exit(0);
+         } else if (ans == 'y' || ans == 'Y' ) {
+            initGame();
+            currentState = PLAYING;
+            main(args);
+            REPLIED = true;
+         }
+      }while(REPLIED == false);
+      
    }
 
    /** Initialize the board[][], currentState and currentPlayer for a new game*/
    public static void initGame() {
+      REPLIED = false;
       for (int row = 0; row < ROWS; ++row) {
          for (int col = 0; col < COLS; ++col) {
             board[row][col] = NO_SEED;  // all cells empty
