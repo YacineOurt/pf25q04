@@ -1,6 +1,8 @@
 package TTTGUI;
 
 import java.awt.*;
+import javax.swing.*;
+import java.io.File;
 /**
  * The TTT.Cell class models each individual cell of the game board.
  */
@@ -18,6 +20,10 @@ public class Cell {
     /** Row and column of this cell */
     int row, col;
 
+    // Ajout des icônes statiques pour éviter de les recharger à chaque paint
+    private static final ImageIcon CROSS_ICON = new ImageIcon("TTTGUI/images/cross.png");
+    private static final ImageIcon CIRCLE_ICON = new ImageIcon("TTTGUI/images/circle.png");
+
     /** Constructor to initialize this cell with the specified row and col */
     public Cell(int row, int col) {
         this.row = row;
@@ -32,22 +38,14 @@ public class Cell {
 
     /** Paint itself on the graphics canvas, given the Graphics context */
     public void paint(Graphics g) {
-        // Use Graphics2D which allows us to set the pen's stroke
-        Graphics2D g2d = (Graphics2D)g;
-        g2d.setStroke(new BasicStroke(SEED_STROKE_WIDTH,
-                BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-        // Draw the TTT.Seed if it is not empty
         int x1 = col * SIZE + PADDING;
         int y1 = row * SIZE + PADDING;
         if (content == Seed.CROSS) {
-            g2d.setColor(GameMain.COLOR_CROSS);  // draw a 2-line cross
-            int x2 = (col + 1) * SIZE - PADDING;
-            int y2 = (row + 1) * SIZE - PADDING;
-            g2d.drawLine(x1, y1, x2, y2);
-            g2d.drawLine(x2, y1, x1, y2);
-        } else if (content == Seed.NOUGHT) {  // draw a circle
-            g2d.setColor(GameMain.COLOR_NOUGHT);
-            g2d.drawOval(x1, y1, SEED_SIZE, SEED_SIZE);
+            // Affiche l'image de la croix
+            g.drawImage(CROSS_ICON.getImage(), x1, y1, SEED_SIZE, SEED_SIZE, null);
+        } else if (content == Seed.NOUGHT) {
+            // Affiche l'image du cercle
+            g.drawImage(CIRCLE_ICON.getImage(), x1, y1, SEED_SIZE, SEED_SIZE, null);
         }
     }
 }

@@ -3,6 +3,8 @@ package TTTGUI;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+import javax.sound.sampled.*;
+import java.io.File;
 /**
  * Tic-Tac-Toe: Two-player Graphic version with better OO design.
  * The TTT.Board and TTT.Cell classes are separated in their own classes.
@@ -23,6 +25,9 @@ public class GameMain extends JPanel {
     private State currentState;  // the current state of the game
     private Seed currentPlayer;  // the current player
     private JLabel statusBar;    // for displaying status message
+    private JLabel scoreLabel;   // pour afficher le score
+    private int crossScore = 0; // score de l'équipe croix
+    private int noughtScore = 0; // score de l'équipe rond
 
     /** Constructor to setup the UI and game components */
     public GameMain() {
@@ -42,8 +47,14 @@ public class GameMain extends JPanel {
                             && board.cells[row][col].content == Seed.NO_SEED) {
                         // Update cells[][] and return the new game state after the move
                         currentState = board.stepGame(currentPlayer, row, col);
+                        // Joue le son de coup joué
+                        playSound("TTTGUI/audio/tour.wav");
                         // Switch player
                         currentPlayer = (currentPlayer == Seed.CROSS) ? Seed.NOUGHT : Seed.CROSS;
+                        // Si la partie se termine, joue le son de fin
+                        if (currentState == State.CROSS_WON || currentState == State.NOUGHT_WON || currentState == State.DRAW) {
+                            playSound("TTTGUI/audio/end.wav");
+                        }
                     }
                 } else {        // game over
                     newGame();  // restart the game
@@ -62,10 +73,22 @@ public class GameMain extends JPanel {
         statusBar.setHorizontalAlignment(JLabel.LEFT);
         statusBar.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 12));
 
+        // Ajout du label de score
+        scoreLabel = new JLabel();
+        scoreLabel.setFont(FONT_STATUS);
+        scoreLabel.setBackground(COLOR_BG_STATUS);
+        scoreLabel.setOpaque(true);
+        scoreLabel.setPreferredSize(new Dimension(300, 30));
+        scoreLabel.setHorizontalAlignment(JLabel.CENTER);
+        scoreLabel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 12));
+        updateScoreLabel();
+
+        JPanel bottomPanel = new JPanel(new BorderLayout());
+        bottomPanel.add(scoreLabel, BorderLayout.NORTH);
+        bottomPanel.add(statusBar, BorderLayout.SOUTH);
         super.setLayout(new BorderLayout());
-        super.add(statusBar, BorderLayout.PAGE_END); // same as SOUTH
-        super.setPreferredSize(new Dimension(Board.CANVAS_WIDTH, Board.CANVAS_HEIGHT + 30));
-        // account for statusBar in height
+        super.add(bottomPanel, BorderLayout.PAGE_END);
+        super.setPreferredSize(new Dimension(Board.CANVAS_WIDTH, Board.CANVAS_HEIGHT + 60));
         super.setBorder(BorderFactory.createLineBorder(COLOR_BG_STATUS, 2, false));
 
         // Set up Game
@@ -87,6 +110,12 @@ public class GameMain extends JPanel {
         }
         currentPlayer = Seed.CROSS;    // cross plays first
         currentState = State.PLAYING;  // ready to play
+        updateScoreLabel();
+    }
+
+    /** Met à jour le texte du score */
+    private void updateScoreLabel() {
+        scoreLabel.setText("Score - X : " + crossScore + "   O : " + noughtScore);
     }
 
     /** Custom painting codes on this JPanel */
@@ -107,9 +136,13 @@ public class GameMain extends JPanel {
         } else if (currentState == State.CROSS_WON) {
             statusBar.setForeground(Color.RED);
             statusBar.setText("'X' Won! Click to play again.");
+            crossScore++;
+            updateScoreLabel();
         } else if (currentState == State.NOUGHT_WON) {
             statusBar.setForeground(Color.RED);
             statusBar.setText("'O' Won! Click to play again.");
+            noughtScore++;
+            updateScoreLabel();
         }
     }
 
@@ -127,5 +160,17 @@ public class GameMain extends JPanel {
                 frame.setVisible(true);            // show it
             }
         });
+    }
+
+    // Méthode utilitaire pour jouer un son
+    private void playSound(String soundFile) {
+        try {
+            AudioInputStream audioIn = AudioSystem.getAudioInputStream(new File(soundFile));
+            Clip clip = AudioSystem.getClip();
+            clip.open(audioIn);
+            clip.start();
+        } catch (Exception e) {
+            // Ignore les erreurs de son
+        }
     }
 }
